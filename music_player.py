@@ -23,7 +23,8 @@ class MusicPlayer:
         self.listbox = tk.Listbox(self.master, selectmode=tk.SINGLE)
         self.listbox.pack(side=tk.TOP, padx=10, pady=10, fill=tk.BOTH, expand=True)
 
-        self.progress_bar = ttk.Scale(self.master, from_=0, to=100, orient=tk.HORIZONTAL, value=0, command=self.slide)
+        self.progress_bar = ttk.Scale(self.master, from_=0, to=100, orient=tk.HORIZONTAL, value=0, command=self.slide,
+                                      state=tk.DISABLED)
         self.progress_bar.pack(side=tk.TOP, fill=tk.BOTH, padx=10, pady=10)
 
         self.status_frame = tk.Frame(self.master)
@@ -99,6 +100,7 @@ class MusicPlayer:
             self.next_button.config(state=tk.NORMAL)
             self.skip_forward_button.config(state=tk.NORMAL)
             self.skip_backward_button.config(state=tk.NORMAL)
+            self.progress_bar.config(state=tk.NORMAL)
             self.listbox.selection_set(0)
         else:
             self.play.config(state=tk.DISABLED)
@@ -107,6 +109,7 @@ class MusicPlayer:
             self.next_button.config(state=tk.DISABLED)
             self.skip_forward_button.config(state=tk.DISABLED)
             self.skip_backward_button.config(state=tk.DISABLED)
+            self.progress_bar.config(state=tk.DISABLED)
 
     def play_music(self):
         """
