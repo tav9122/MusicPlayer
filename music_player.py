@@ -46,7 +46,7 @@ class MusicPlayer:
                                              state=tk.DISABLED)
         self.pause_resume_button.pack(side=tk.LEFT, padx=10, pady=10)
 
-        self.next_button = tk.Button(self.controls_frame, text="Next >>", command=self.play_next, state=tk.DISABLED)
+        self.next_button = tk.Button(self.controls_frame, text="Next >>", command=self.next_song, state=tk.DISABLED)
         self.next_button.pack(side=tk.RIGHT, padx=10, pady=10)
 
         self.skip_forward_button = tk.Button(self.controls_frame, text=">> 5s", command=self.skip_forward,
@@ -57,7 +57,7 @@ class MusicPlayer:
                                               state=tk.DISABLED)
         self.skip_backward_button.pack(side=tk.RIGHT, padx=10, pady=10)
 
-        self.previous_button = tk.Button(self.controls_frame, text="<< Previous", command=self.play_previous,
+        self.previous_button = tk.Button(self.controls_frame, text="<< Previous", command=self.previous_song,
                                          state=tk.DISABLED)
         self.previous_button.pack(side=tk.RIGHT, padx=10, pady=10)
 
@@ -92,8 +92,8 @@ class MusicPlayer:
                 self.listbox.insert(tk.END, file)
                 self.music_files.append(os.path.join(music_folder, file))
 
-        # If there is at least one music file, enable the buttons, and set the selection of
-        # the list box to index 0, else disable all buttons.
+        # If there is at least one music file, enable the elements, and set the selection of
+        # the list box to index 0, else disable all elements.
         if self.music_files:
             self.play.config(state=tk.NORMAL)
             self.pause_resume_button.config(state=tk.NORMAL)
@@ -101,7 +101,6 @@ class MusicPlayer:
             self.next_button.config(state=tk.NORMAL)
             self.skip_forward_button.config(state=tk.NORMAL)
             self.skip_backward_button.config(state=tk.NORMAL)
-            self.progress_bar.config(state=tk.NORMAL)
             self.listbox.selection_set(0)
         else:
             self.play.config(state=tk.DISABLED)
@@ -128,12 +127,16 @@ class MusicPlayer:
         self.progress_bar.config(value=0)
         self.progress_bar.config(to=TinyTag.get(self.current_song).duration)
 
-        # Set the text of duration_label to current song's duration.
+        # Set the text of current time label to 0 and duration_label's to current song's duration.
+        self.current_time_label.config(text=f"{time.strftime('%M:%S', time.gmtime(0))}")
         self.duration_label.config(text=f"{time.strftime('%M:%S', time.gmtime(TinyTag.get(self.current_song).duration))}")
 
-        # Check if the loop function is running, there should be only one loop running at a time.
+        # Check if the loop function is running, to make sure there is only one loop running at a time.
         if not self.loop_is_running:
             self.loop()
+
+        # Enable the progress bar.
+        self.progress_bar.config(state=tk.NORMAL)
 
         # Play the song.
         pygame.mixer.music.load(self.current_song)
@@ -144,51 +147,72 @@ class MusicPlayer:
         Pause/resume the music stream.
         """
 
-        # Pause the music, and set the button text to "Resume" if the stream is currently unpause, otherwise resume
-        # the stream, set the button text to "Pause".
         if self.paused:
+            # The stream is pausing so resume it, start playing at the position according to progress bar.
             pygame.mixer.music.load(self.current_song)
             pygame.mixer.music.play(start=int(self.progress_bar.get()))
+
+            # Set self.paused and its text to "False".
             self.paused = False
             self.pause_resume_button.config(text="Pause")
         else:
+            # Pause the stream.
             pygame.mixer.music.pause()
+
+            # Set self.paused to True and its text to "Resume".
             self.paused = True
             self.pause_resume_button.config(text="Resume")
 
-    def play_previous(self):
+    def previous_song(self):
         """
-        Play the previous song in the list box.
+        Jump to the previous song in the list box.
         """
 
-        # Play the previous song according to the order in listbox.
-        if self.listbox.curselection()[0] > 0:
-            current_index = self.listbox.curselection()[0]
-            self.listbox.selection_clear(0, tk.END)
+        # Get the current index of the song in list box.
+        current_index = self.listbox.curselection()[0]
+
+        # Clear the selections in list box.
+        self.listbox.selection_clear(0, tk.END)
+
+        # If current index greater than 0 then play set the selection to the previous song in list box.
+        if current_index > 0:
             self.listbox.selection_set(current_index - 1)
-            self.play_music()
 
-        # If the streaming currently at the first song then replay the first song, which is also the current song.
+        # If the streaming currently at the first song then jump to the last song.
         else:
-            self.listbox.selection_set(self.listbox.curselection()[0])
-            self.play_music()
+            self.listbox.selection_set(len(self.music_files) - 1)
 
-    def play_next(self):
+        # If the stream is pausing then remain that status.
+        status = self.paused
+        self.play_music()
+        if status:
+            self.pause_resume_music()
+
+    def next_song(self):
         """
-        Play the next song in the list box.
+        Jump to the next song in the list box.
         """
 
-        # Play the next song according to the order in listbox.
-        if self.listbox.curselection()[0] < len(self.music_files) - 1:
-            current_index = self.listbox.curselection()[0]
-            self.listbox.selection_clear(0, tk.END)
+        # Get the current index of the song in list box.
+        current_index = self.listbox.curselection()[0]
+
+        # Clear the selections in list box.
+        self.listbox.selection_clear(0, tk.END)
+
+        # If current index is not the latest index of the list box (which is also the same as music_files) then set
+        # the selection to the next song in list box.
+        if current_index < len(self.music_files) - 1:
             self.listbox.selection_set(current_index + 1)
-            self.play_music()
 
-        # If the streaming currently at the last song then replay the last song, which is also the current song.
+        # If the streaming currently at the last song then jump to the first song.
         else:
-            self.listbox.selection_set(self.listbox.curselection()[0])
-            self.play_music()
+            self.listbox.selection_set(0)
+
+        # If the stream is pausing then remain that status.
+        status = self.paused
+        self.play_music()
+        if status:
+            self.pause_resume_music()
 
     def skip_forward(self):
         """
@@ -200,8 +224,7 @@ class MusicPlayer:
 
         # If the progress bar value higher than the song duration then jump to the next song.
         if self.progress_bar.get() > TinyTag.get(self.current_song).duration:
-            self.play_next()
-            self.pause_resume_music()
+            self.next_song()
 
         # Reload and play the music according to the updated progress bar.
         if not self.paused:
@@ -218,8 +241,14 @@ class MusicPlayer:
         Skip 5 seconds backward.
         """
 
-        # Decrease the value of progress bar by 5 seconds, then reload and play the music accordingly.
+        # Decrease the value of progress bar by 5 seconds.
         self.progress_bar.config(value=self.progress_bar.get() - 5)
+
+        # If the progress bar value lower than 0 then jump to the previous song.
+        if self.progress_bar.get() < 0:
+            self.previous_song()
+
+        # Reload and play the music according to the updated progress bar.
         if not self.paused:
             pygame.mixer.music.load(self.current_song)
             pygame.mixer.music.play(start=int(self.progress_bar.get()))
@@ -245,7 +274,7 @@ class MusicPlayer:
 
             # Once the progress_bar reach its end then jump to the next song.
             if self.progress_bar.get() > song_duration:
-                self.play_next()
+                self.next_song()
 
         self.status_frame.after(1000, self.loop)
 
