@@ -3,8 +3,8 @@ import tkinter as tk
 from tkinter import filedialog
 import pygame
 import time
-from mutagen.mp3 import MP3
 import tkinter.ttk as ttk
+from tinytag import TinyTag
 
 
 class MusicPlayer:
@@ -87,7 +87,8 @@ class MusicPlayer:
         music_folder = tk.filedialog.askdirectory()
         # music_folder = r"/home/vu/Music"
         for file in os.listdir(music_folder):
-            if file.endswith(".mp3"):
+            if file.endswith((".mp3", ".mp4", ".m4a", ".m4b", ".m4r", ".m4v", ".alac", ".aax", ".aaxc", ".wav", ".ogg",
+                              ".opus", ".flac", ".wma")):
                 self.listbox.insert(tk.END, file)
                 self.music_files.append(os.path.join(music_folder, file))
 
@@ -125,10 +126,10 @@ class MusicPlayer:
 
         # Set the progress bar value to 0 and set its maximum to the duration of the current_song.
         self.progress_bar.config(value=0)
-        self.progress_bar.config(to=MP3(self.current_song).info.length)
+        self.progress_bar.config(to=TinyTag.get(self.current_song).duration)
 
         # Set the text of duration_label to current song's duration.
-        self.duration_label.config(text=f"{time.strftime('%M:%S', time.gmtime(MP3(self.current_song).info.length))}")
+        self.duration_label.config(text=f"{time.strftime('%M:%S', time.gmtime(TinyTag.get(self.current_song).duration))}")
 
         # Check if the loop function is running, there should be only one loop running at a time.
         if not self.loop_is_running:
@@ -198,7 +199,7 @@ class MusicPlayer:
         self.progress_bar.config(value=self.progress_bar.get() + 5)
 
         # If the progress bar value higher than the song duration then jump to the next song.
-        if self.progress_bar.get() > MP3(self.current_song).info.length:
+        if self.progress_bar.get() > TinyTag.get(self.current_song).duration:
             self.play_next()
             self.pause_resume_music()
 
@@ -236,7 +237,7 @@ class MusicPlayer:
         self.loop_is_running = True
         # If the stream is not paused then increase the value of current_time_label, slider both by 1 second.
         if not self.paused:
-            song_duration = int(MP3(self.current_song).info.length)
+            song_duration = int(TinyTag.get(self.current_song).duration)
 
             self.progress_bar.config(value=self.progress_bar.get() + 1)
 
@@ -265,3 +266,4 @@ class MusicPlayer:
         # to be the function loop's job but while the stream being paused the loop won't update the label value.
         else:
             self.current_time_label.config(text=f"{time.strftime('%M:%S', time.gmtime(self.progress_bar.get()))}")
+
