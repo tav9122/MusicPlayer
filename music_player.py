@@ -23,7 +23,7 @@ class MusicPlayer:
         self.listbox = tk.Listbox(self.master, selectmode=tk.SINGLE)
         self.listbox.pack(side=tk.TOP, padx=10, pady=10, fill=tk.BOTH, expand=True)
 
-        self.progress_bar = ttk.Scale(self.master, from_=0, to=100, orient=tk.HORIZONTAL, value=0, command=self.slide,
+        self.progress_bar = ttk.Scale(self.master, from_=0, to=100, orient=tk.HORIZONTAL, value=0, command=self.progress_bar_slide,
                                       state=tk.DISABLED)
         self.progress_bar.pack(side=tk.TOP, fill=tk.BOTH, padx=10, pady=10)
 
@@ -35,6 +35,9 @@ class MusicPlayer:
 
         self.current_time_label = tk.Label(self.status_frame, text="00:00", borderwidth=0, anchor=tk.E)
         self.current_time_label.pack(side=tk.LEFT, padx=13)
+
+        self.song_title_label = tk.Label(self.status_frame)
+        self.song_title_label.pack()
 
         self.controls_frame = tk.Frame(self.master)
         self.controls_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
@@ -130,6 +133,9 @@ class MusicPlayer:
         # Set the text of current time label to 0 and duration_label's to current song's duration.
         self.current_time_label.config(text=f"{time.strftime('%M:%S', time.gmtime(0))}")
         self.duration_label.config(text=f"{time.strftime('%M:%S', time.gmtime(TinyTag.get(self.current_song).duration))}")
+
+        # Set the text of song title label to the song's title.
+        self.song_title_label.config(text=f"{self.listbox.get(self.listbox.curselection()[0])}")
 
         # Check if the loop function is running, to make sure there is only one loop running at a time.
         if not self.loop_is_running:
@@ -278,7 +284,7 @@ class MusicPlayer:
 
         self.status_frame.after(1000, self.loop)
 
-    def slide(self, _):
+    def progress_bar_slide(self, _):
         """
         Determine what happen as the slider's value change.
         """
