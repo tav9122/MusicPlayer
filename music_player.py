@@ -5,6 +5,7 @@ import pygame
 import time
 import tkinter.ttk as ttk
 from tinytag import TinyTag
+from random import randint
 
 
 class MusicPlayer:
@@ -15,32 +16,32 @@ class MusicPlayer:
         # Center the window.
         screen_width = self.master.winfo_screenwidth()
         screen_height = self.master.winfo_screenheight()
-        x = (screen_width / 2) - (1200 / 2)
-        y = (screen_height / 2) - (650 / 2)
-        self.master.geometry(f"1200x650+{int(x)}+{int(y)}")
+        x = (screen_width / 2) - (1250 / 2)
+        y = (screen_height / 2) - (800 / 2)
+        self.master.geometry(f"1250x800+{int(x)}+{int(y)}")
 
         # Initialize window components.
         self.listbox = tk.Listbox(self.master, selectmode=tk.SINGLE)
         self.listbox.pack(side=tk.TOP, padx=10, pady=10, fill=tk.BOTH, expand=True)
 
-        self.progress_bar = ttk.Scale(self.master, from_=0, to=100, orient=tk.HORIZONTAL, value=0, command=self.progress_bar_slide,
-                                      state=tk.DISABLED)
+        self.progress_bar = ttk.Scale(self.master, from_=0, to=100, orient=tk.HORIZONTAL, value=0,
+                                      command=self.progress_bar_slide, state=tk.DISABLED)
         self.progress_bar.pack(side=tk.TOP, fill=tk.BOTH, padx=10, pady=10)
 
         self.status_frame = tk.Frame(self.master)
         self.status_frame.pack(side=tk.TOP, fill=tk.X, ipady=2)
 
-        self.duration_label = tk.Label(self.status_frame, text="00:00", borderwidth=0, anchor=tk.E)
+        self.duration_label = tk.Label(self.status_frame, text="00:00", borderwidth=0)
         self.duration_label.pack(side=tk.RIGHT, padx=13)
 
-        self.current_time_label = tk.Label(self.status_frame, text="00:00", borderwidth=0, anchor=tk.E)
+        self.current_time_label = tk.Label(self.status_frame, text="00:00", borderwidth=0)
         self.current_time_label.pack(side=tk.LEFT, padx=13)
 
         self.song_title_label = tk.Label(self.status_frame)
         self.song_title_label.pack()
 
         self.controls_frame = tk.Frame(self.master)
-        self.controls_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        self.controls_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True, pady=(20, 0))
 
         self.play = tk.Button(self.controls_frame, text="Play", command=self.play_music, state=tk.DISABLED)
         self.play.pack(side=tk.LEFT, padx=10, pady=10)
@@ -64,14 +65,38 @@ class MusicPlayer:
                                          state=tk.DISABLED)
         self.previous_button.pack(side=tk.RIGHT, padx=10, pady=10)
 
+        self.play_mode_frame = tk.Frame(self.master)
+        self.play_mode_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True, pady=5)
+
+        self.play_mode_label = tk.Label(self.play_mode_frame, text="Play mode: ", borderwidth=0)
+        self.play_mode_label.pack(side=tk.LEFT, padx=(13, 0))
+
+        self.play_mode_button = tk.Button(self.play_mode_frame, text="Sequence", command=self.change_play_mode,
+                                          state=tk.DISABLED)
+        self.play_mode_button.pack(side=tk.LEFT)
+
+        self.volume_frame = tk.Frame(self.master)
+        self.volume_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+
+        self.volume_label = tk.Label(self.volume_frame, text="Volume: ", borderwidth=0)
+        self.volume_label.pack(side=tk.LEFT, padx=13)
+
+        self.volume_bar = ttk.Scale(self.volume_frame, from_=0, to=1, orient=tk.HORIZONTAL, value=1,
+                                    command=self.volume_bar_slide, state=tk.DISABLED, length=250)
+        self.volume_bar.pack(side=tk.LEFT)
+
+        self.volume_value_label = tk.Label(self.volume_frame, text="100%", borderwidth=0)
+        self.volume_value_label.pack(side=tk.LEFT, padx=15)
+
         self.choose_folder_button = tk.Button(self.master, text="Choose Folder", command=self.choose_folder)
-        self.choose_folder_button.pack(side=tk.BOTTOM, padx=10, pady=10)
+        self.choose_folder_button.pack(side=tk.BOTTOM, padx=10, pady=(40, 20))
 
         # Initialize some variables that will we will need later.
         self.music_files = []
         self.current_song = None
         self.paused = False
         self.loop_is_running = False
+        self.play_mode = "Sequence"
 
         # Initialize Mixer to control the music stream.
         pygame.mixer.init()
@@ -104,6 +129,7 @@ class MusicPlayer:
             self.next_button.config(state=tk.NORMAL)
             self.skip_forward_button.config(state=tk.NORMAL)
             self.skip_backward_button.config(state=tk.NORMAL)
+            self.play_mode_button.config(state=tk.NORMAL)
             self.listbox.selection_set(0)
         else:
             self.play.config(state=tk.DISABLED)
@@ -113,6 +139,8 @@ class MusicPlayer:
             self.skip_forward_button.config(state=tk.DISABLED)
             self.skip_backward_button.config(state=tk.DISABLED)
             self.progress_bar.config(state=tk.DISABLED)
+            self.progress_bar.config(state=tk.DISABLED)
+            self.play_mode_button.config(state=tk.DISABLED)
 
     def play_music(self):
         """
@@ -132,7 +160,8 @@ class MusicPlayer:
 
         # Set the text of current time label to 0 and duration_label's to current song's duration.
         self.current_time_label.config(text=f"{time.strftime('%M:%S', time.gmtime(0))}")
-        self.duration_label.config(text=f"{time.strftime('%M:%S', time.gmtime(TinyTag.get(self.current_song).duration))}")
+        self.duration_label.config(
+            text=f"{time.strftime('%M:%S', time.gmtime(TinyTag.get(self.current_song).duration))}")
 
         # Set the text of song title label to the song's title.
         self.song_title_label.config(text=f"{self.listbox.get(self.listbox.curselection()[0])}")
@@ -141,8 +170,9 @@ class MusicPlayer:
         if not self.loop_is_running:
             self.loop()
 
-        # Enable the progress bar.
+        # Enable the progress bar and volume bar.
         self.progress_bar.config(state=tk.NORMAL)
+        self.volume_bar.config(state=tk.NORMAL)
 
         # Play the song.
         pygame.mixer.music.load(self.current_song)
@@ -174,6 +204,11 @@ class MusicPlayer:
         Jump to the previous song in the list box.
         """
 
+        # If the current mode is "Random" then call the play_random_song function then return.
+        if self.play_mode == "Random":
+            self.play_random_song()
+            return
+
         # Get the current index of the song in list box.
         current_index = self.listbox.curselection()[0]
 
@@ -198,6 +233,11 @@ class MusicPlayer:
         """
         Jump to the next song in the list box.
         """
+
+        # If the current mode is "Random" then call the play_random_song function then return.
+        if self.play_mode == "Random":
+            self.play_random_song()
+            return
 
         # Get the current index of the song in list box.
         current_index = self.listbox.curselection()[0]
@@ -278,15 +318,19 @@ class MusicPlayer:
 
             self.current_time_label.config(text=f"{time.strftime('%M:%S', time.gmtime(self.progress_bar.get()))}")
 
-            # Once the progress_bar reach its end then jump to the next song.
+            # Once the progress_bar reach its end then consider the current mode for the next action, whether call the
+            # next_song function or repeat the current song.
             if self.progress_bar.get() > song_duration:
-                self.next_song()
+                if self.play_mode == "Repeat":
+                    self.play_music()
+                else:
+                    self.next_song()
 
         self.status_frame.after(1000, self.loop)
 
     def progress_bar_slide(self, _):
         """
-        Determine what happen as the slider's value change.
+        Determine what happen as the progress bar slider's value change.
         """
 
         # Convert the slider value to integer.
@@ -302,3 +346,44 @@ class MusicPlayer:
         else:
             self.current_time_label.config(text=f"{time.strftime('%M:%S', time.gmtime(self.progress_bar.get()))}")
 
+    def volume_bar_slide(self, _):
+        """
+        Determine what happen as the volume bar slider's value change.
+        """
+
+        # Set new volume base on the value of the slider.
+        pygame.mixer.music.set_volume(self.volume_bar.get())
+
+        # Set the value for label base on the current volume.
+        self.volume_value_label.config(text=f"{int(pygame.mixer.music.get_volume() * 100)}%")
+
+    def change_play_mode(self):
+        """
+        Change playing mode, sequence, repeat, or random.
+        """
+        if self.play_mode == "Sequence":
+            self.play_mode = "Repeat"
+        elif self.play_mode == "Repeat":
+            self.play_mode = "Random"
+        else:
+            self.play_mode = "Sequence"
+
+        # Change the button text.
+        self.play_mode_button.config(text=f"{self.play_mode}")
+
+    def play_random_song(self):
+        """
+        Play a random song.
+        """
+
+        # Clear the list box.
+        self.listbox.selection_clear(0, tk.END)
+
+        # Set the list box selection to a random position.
+        self.listbox.selection_set(randint(0, len(self.music_files) - 1))
+
+        # If the stream is pausing then remain that status.
+        status = self.paused
+        self.play_music()
+        if status:
+            self.pause_resume_music()
