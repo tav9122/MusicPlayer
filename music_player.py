@@ -16,9 +16,9 @@ class MusicPlayer:
         # Center the window.
         screen_width = self.master.winfo_screenwidth()
         screen_height = self.master.winfo_screenheight()
-        x = (screen_width / 2) - (1250 / 2)
-        y = (screen_height / 2) - (800 / 2)
-        self.master.geometry(f"1250x800+{int(x)}+{int(y)}")
+        x = (screen_width / 2) - (1200 / 2)
+        y = (screen_height / 2) - (775 / 2)
+        self.master.geometry(f"1200x775+{int(x)}+{int(y)}")
 
         # Initialize window components.
         self.listbox = tk.Listbox(self.master, selectmode=tk.SINGLE)
@@ -41,32 +41,32 @@ class MusicPlayer:
         self.song_title_label.pack()
 
         self.controls_frame = tk.Frame(self.master)
-        self.controls_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True, pady=(20, 0))
+        self.controls_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True, pady=(25, 0))
 
         self.play = tk.Button(self.controls_frame, text="Play", command=self.play_music, state=tk.DISABLED)
-        self.play.pack(side=tk.LEFT, padx=10, pady=10)
+        self.play.pack(side=tk.LEFT, padx=10)
 
         self.pause_resume_button = tk.Button(self.controls_frame, text="Pause", command=self.pause_resume_music,
                                              state=tk.DISABLED)
-        self.pause_resume_button.pack(side=tk.LEFT, padx=10, pady=10)
+        self.pause_resume_button.pack(side=tk.LEFT, padx=10)
 
         self.next_button = tk.Button(self.controls_frame, text="Next >>", command=self.next_song, state=tk.DISABLED)
-        self.next_button.pack(side=tk.RIGHT, padx=10, pady=10)
+        self.next_button.pack(side=tk.RIGHT, padx=10)
 
         self.skip_forward_button = tk.Button(self.controls_frame, text=">> 5s", command=self.skip_forward,
                                              state=tk.DISABLED)
-        self.skip_forward_button.pack(side=tk.RIGHT, padx=10, pady=10)
+        self.skip_forward_button.pack(side=tk.RIGHT, padx=10)
 
         self.skip_backward_button = tk.Button(self.controls_frame, text="<< 5s", command=self.skip_backward,
                                               state=tk.DISABLED)
-        self.skip_backward_button.pack(side=tk.RIGHT, padx=10, pady=10)
+        self.skip_backward_button.pack(side=tk.RIGHT, padx=10)
 
         self.previous_button = tk.Button(self.controls_frame, text="<< Previous", command=self.previous_song,
                                          state=tk.DISABLED)
-        self.previous_button.pack(side=tk.RIGHT, padx=10, pady=10)
+        self.previous_button.pack(side=tk.RIGHT, padx=10)
 
         self.play_mode_frame = tk.Frame(self.master)
-        self.play_mode_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True, pady=5)
+        self.play_mode_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
         self.play_mode_label = tk.Label(self.play_mode_frame, text="Play mode: ", borderwidth=0)
         self.play_mode_label.pack(side=tk.LEFT, padx=(13, 0))
@@ -89,7 +89,7 @@ class MusicPlayer:
         self.volume_value_label.pack(side=tk.LEFT, padx=15)
 
         self.choose_folder_button = tk.Button(self.master, text="Choose Folder", command=self.choose_folder)
-        self.choose_folder_button.pack(side=tk.BOTTOM, padx=10, pady=(40, 20))
+        self.choose_folder_button.pack(side=tk.BOTTOM, padx=10, pady=(10, 10))
 
         # Initialize some variables that will we will need later.
         self.music_files = []
