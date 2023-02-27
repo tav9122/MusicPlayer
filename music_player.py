@@ -204,9 +204,9 @@ class MusicPlayer:
         Jump to the previous song in the list box.
         """
 
-        # If the current mode is "Random" then call the play_random_song function then return.
-        if self.play_mode == "Random":
-            self.play_random_song()
+        # If the current mode is "Shuffle" then call the play_shuffle function then return.
+        if self.play_mode == "Shuffle":
+            self.play_shuffle()
             return
 
         # Get the current index of the song in list box.
@@ -234,9 +234,9 @@ class MusicPlayer:
         Jump to the next song in the list box.
         """
 
-        # If the current mode is "Random" then call the play_random_song function then return.
-        if self.play_mode == "Random":
-            self.play_random_song()
+        # If the current mode is "Shuffle" then call the play_shuffle function then return.
+        if self.play_mode == "Shuffle":
+            self.play_shuffle()
             return
 
         # Get the current index of the song in list box.
@@ -359,19 +359,19 @@ class MusicPlayer:
 
     def change_play_mode(self):
         """
-        Change playing mode, sequence, repeat, or random.
+        Change playing mode, sequence, repeat, or shuffle.
         """
         if self.play_mode == "Sequence":
             self.play_mode = "Repeat"
         elif self.play_mode == "Repeat":
-            self.play_mode = "Random"
+            self.play_mode = "Shuffle"
         else:
             self.play_mode = "Sequence"
 
         # Change the button text.
         self.play_mode_button.config(text=f"{self.play_mode}")
 
-    def play_random_song(self):
+    def play_shuffle(self):
         """
         Play a random song.
         """
